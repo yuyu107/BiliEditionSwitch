@@ -35,6 +35,27 @@ for (const [lang] of routing.languages) {
   equal(routing.plan(to.url, lang).url, home);
 }
 
+
+for (const [lang] of routing.languages) {
+ const member = "https://member.bilibili.com/";
+ const to = routing.plan(member + "platform/upload/video/frame?aid=123#edit", lang);
+ equal(to.url, member + lang + "/platform/upload/video/frame?aid=123#edit");
+ equal(to.fallback, false);
+ equal(routing.inspect(to.url).international, true);
+ equal(routing.plan(to.url, lang).url, member + "platform/upload/video/frame?aid=123#edit");
+}
+equal(routing.plan("https://member.bilibili.com/zh-Hans/platform/home", "en").url,
+ "https://member.bilibili.com/platform/home");
+equal(routing.plan("https://member.bilibili.com/unrelated", "ja").fallback, true);
+
+for (const host of ["space.bilibili.com", "member.bilibili.com", "live.bilibili.com", "other.bilibili.com"]) {
+ equal(routing.inspect("https://" + host + "/ja/some/page").international, true);
+ equal(routing.inspect("https://" + host + "/ja/some/page").language, "ja");
+ equal(routing.inspect("https://" + host + "/some/page").international, false);
+}
+equal(routing.inspect("https://fakebilibili.com/ja/"), null);
+equal(routing.inspect("https://bilibili.com.evil.test/ja/"), null);
+
 async function integration() {
   const calls = [];
   const listeners = {};

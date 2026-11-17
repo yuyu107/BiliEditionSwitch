@@ -20,26 +20,28 @@ var BiliSwitch = (() => {
     if (!/^https?:$/.test(url.protocol) ||
         !(url.hostname === "bilibili.com" || url.hostname.endsWith(".bilibili.com"))) return null;
     const main = ["www.bilibili.com", "bilibili.com"].includes(url.hostname);
+    const creator = url.hostname === "member.bilibili.com";
     const segments = url.pathname.split("/");
-    const language = main && languages.find(([code]) => code.toLowerCase() === segments[1].toLowerCase())?.[0];
+    const language = languages.find(([code]) => code.toLowerCase() === segments[1].toLowerCase())?.[0];
     const params = Array.from(url.searchParams);
     const value = name => params.find(([key]) => key.toLowerCase() === name)?.[1];
     const international = !!language || value("site")?.toUpperCase() === "OVERSEAS" ||
       languages.some(([code]) => code.toLowerCase() === value("lang")?.toLowerCase());
     const path = language ? "/" + segments.slice(2).join("/") : url.pathname;
-    return {url, main, language, path: path || "/", international};
+    return {url, main, creator, language, path: path || "/", international};
   }
   function plan(raw, preferredLanguage) {
     const current = inspect(raw);
     if (!current) return null;
     const international = !current.international;
     const language = normalizeLanguage(preferredLanguage);
-    const {url, main, path} = current;
-    // Main-site homepage and ordinary BV/av videos have verified language routes.
-    const supported = main && (path === "/" || /^\/video\/(?:BV[a-zA-Z0-9]+|av\d+)\/?$/i.test(path));
+    const {url, main, creator, path} = current;
+    // Creator Center uses the same /<language>/ prefix before /platform/ routes.
+    const supported = (creator && /^\/platform(?:\/|$)/.test(path)) ||
+      (main && (path === "/" || /^\/video\/(?:BV[a-zA-Z0-9]+|av\d+)\/?$/i.test(path)));
     const target = supported ? new URL(url) : new URL("https://www.bilibili.com/");
     target.protocol = "https:";
-    target.hostname = "www.bilibili.com";
+    target.hostname = supported && creator ? "member.bilibili.com" : "www.bilibili.com";
     target.port = "";
     target.username = "";
     target.password = "";

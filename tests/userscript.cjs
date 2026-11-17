@@ -39,4 +39,14 @@ s=setup('https://www.bilibili.com/');s.location.href='https://www.bilibili.com/e
 s.doc.fullscreenElement={};s.doc.fullscreenchange();eq(s.nodes.find(n=>n.id==='bili-edition-switch-userscript').style.display,'none');
 s.doc.fullscreenElement=null;s.doc.fullscreenchange();eq(s.nodes.find(n=>n.id==='bili-edition-switch-userscript').style.display,'block');
 s=setup('https://example.com');eq(Object.keys(s.menus).length,0);
+
+for (const lang of ['en','zh-Hans','zh-Hant','ja','th','vi','id','ms','ar','pt','es','tr','ru']) {
+ let c=setup('https://member.bilibili.com/platform/upload/video/frame?aid=123#edit',lang);
+ c.menus['切换国内版 / 国际版']();
+ eq(c.location.assigned,`https://member.bilibili.com/${lang}/platform/upload/video/frame?aid=123#edit`);
+ c=setup(`https://member.bilibili.com/${lang}/platform/home?from=header`,lang);
+ eq(c.nodes.some(n=>n.tag==='button'&&n.textContent==='切到国内版'),true);
+ c.menus['切换国内版 / 国际版']();
+ eq(c.location.assigned,'https://member.bilibili.com/platform/home?from=header');
+}
 console.log(`${checks} userscript checks passed (simulated DOM and GM APIs)`);

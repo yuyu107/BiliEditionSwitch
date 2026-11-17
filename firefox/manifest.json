@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "B站国内版 / 国际版切换",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "点击工具栏按钮切换 bilibili.com 国内版与国际多语言版，并设置国际版默认语言。",
   "permissions": ["activeTab", "storage", "menus"],
   "background": {"scripts": ["shared.js", "background.js"], "persistent": false},
