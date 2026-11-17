@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>B站版本切换 · 设置</title>
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <main>
+    <img class="icon" src="icons/switch.svg" alt="" width="56" height="56">
+    <p class="eyebrow">BILIBILI EDITION SWITCH · FIREFOX</p>
+    <h1>一个按钮，切换版本。</h1>
+    <p class="intro">点击 Firefox 工具栏中的扩展图标，在 B站国内版与国际多语言版之间切换。</p>
+    <form id="settings">
+      <label for="language">国际版默认语言</label>
+      <p class="hint" id="language-hint">下次切到国际版时使用此语言；简体中文也可使用国际版布局。</p>
+      <select id="language" aria-describedby="language-hint" disabled></select>
+      <button id="save" type="submit" disabled>保存设置</button>
+      <p id="status" role="status" aria-live="polite"></p>
+    </form>
+    <section>
+      <h2>怎么用</h2>
+      <ul>
+        <li>打开 B站，点击工具栏图标即可切换；也可按 <kbd>Alt</kbd> + <kbd>Shift</kbd> + <kbd>B</kbd>。</li>
+        <li>右键扩展图标，选择“设置国际版默认语言”返回这里。</li>
+        <li>首页与普通视频页保留位置、分 P 等网址参数。其他页面切到目标版本首页。</li>
+      </ul>
+    </section>
+    <p class="note">切换的是 bilibili.com 与 bilibili.com/en/ 等多语言页面。切换会刷新当前页，并更新 B站本地版本及语言偏好。国际版的功能和可用内容由 B站提供。</p>
+    <footer>v0.1.0 · 非官方扩展 · 设置保存在本机，不收集或上传数据。</footer>
+  </main>
+  <script src="shared.js"></script>
+  <script src="options.js"></script>
+</body>
+</html>
