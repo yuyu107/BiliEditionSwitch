@@ -40,8 +40,8 @@ async function toggle(tab) {
     });
     await browser.tabs.update(tab.id, {url: next.url});
     await browser.browserAction.setBadgeText({tabId: tab.id, text: ""});
-    await browser.browserAction.setTitle({tabId: tab.id, title: next.fallback
-      ? "此页面尚未适配，已切换到目标版本首页。右键可设置语言。"
+    await browser.browserAction.setTitle({tabId: tab.id, title: next.parameterMode
+      ? "已保留当前页面并请求切换版本；网站可能不支持此页面的国际版。"
       : "切换 B站国内版 / 国际版（右键可设置语言）"});
   } catch (error) {
     await showError(tab.id, "切换失败，请刷新 B站后重试：" + error.message);
@@ -58,3 +58,4 @@ browser.runtime.onInstalled.addListener(async () => {
   await browser.menus.removeAll();
   browser.menus.create({id: "settings", title: "设置国际版默认语言…", contexts: ["browser_action"]});
 });
+

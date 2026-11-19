@@ -36,22 +36,30 @@ var BiliSwitch = (() => {
     const international = !current.international;
     const language = normalizeLanguage(preferredLanguage);
     const {url, main, creator, path} = current;
-    // Creator Center uses the same /<language>/ prefix before /platform/ routes.
-    const supported = (creator && /^\/platform(?:\/|$)/.test(path)) ||
+    // Verified pages use path prefixes. Other pages retain their origin and path
+    // and request the edition through query hints, which the website may ignore.
+    const pathMode = !!current.language ||
+      (creator && /^\/platform(?:\/|$)/.test(path)) ||
       (main && (path === "/" || /^\/video\/(?:BV[a-zA-Z0-9]+|av\d+)\/?$/i.test(path)));
-    const target = supported ? new URL(url) : new URL("https://www.bilibili.com/");
+    const target = new URL(url);
     target.protocol = "https:";
-    target.hostname = supported && creator ? "member.bilibili.com" : "www.bilibili.com";
     target.port = "";
     target.username = "";
     target.password = "";
-    // Remove obsolete language/site overrides without dropping p, t, or other parameters.
+    // Keep the user's subdomain; only canonicalize the bare main-site hostname.
+    if (target.hostname === "bilibili.com") target.hostname = "www.bilibili.com";
     for (const key of Array.from(target.searchParams.keys())) {
       if (["site", "lang"].includes(key.toLowerCase())) target.searchParams.delete(key);
     }
-    target.pathname = international ? "/" + language + (supported && path !== "/" ? path : "/") : (supported ? path : "/");
-    return {url: target.href, international, language, fallback: !supported};
+    target.pathname = pathMode && international ? "/" + language + (path !== "/" ? path : "/") : path;
+    if (!pathMode && international) {
+      target.searchParams.set("site", "OVERSEAS");
+      target.searchParams.set("lang", language);
+    }
+    return {url: target.href, international, language, parameterMode: !pathMode};
   }
+
   return {languages, defaults, normalizeLanguage, inspect, plan};
 })();
 if (typeof module !== "undefined") module.exports = BiliSwitch;
+

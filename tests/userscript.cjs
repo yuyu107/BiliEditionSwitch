@@ -34,7 +34,7 @@ const select=s.nodes.find(n=>n.tag==='select');eq(select.children.length,13);
 s.menus['设置国际版默认语言…']();eq(select.value,'en');
 select.value='ja';s.nodes.find(n=>n.tag==='button'&&n.textContent==='保存').click();eq(s.stored,'ja');
 s.menus['切换国内版 / 国际版']();eq(s.location.assigned,'https://www.bilibili.com/ja/');
-s=setup('https://space.bilibili.com/123','zh-Hans');s.menus['切换国内版 / 国际版']();eq(s.location.assigned,'https://www.bilibili.com/zh-Hans/');
+s=setup('https://space.bilibili.com/123','zh-Hans');s.menus['切换国内版 / 国际版']();eq(s.location.assigned,'https://space.bilibili.com/123?site=OVERSEAS&lang=zh-Hans');
 s=setup('https://www.bilibili.com/');s.location.href='https://www.bilibili.com/en/';s.intervals[0]();eq(s.nodes.some(n=>n.tag==='button'&&n.textContent==='切到国内版'),true);
 s.doc.fullscreenElement={};s.doc.fullscreenchange();eq(s.nodes.find(n=>n.id==='bili-edition-switch-userscript').style.display,'none');
 s.doc.fullscreenElement=null;s.doc.fullscreenchange();eq(s.nodes.find(n=>n.id==='bili-edition-switch-userscript').style.display,'block');
@@ -49,4 +49,17 @@ for (const lang of ['en','zh-Hans','zh-Hant','ja','th','vi','id','ms','ar','pt',
  c.menus['切换国内版 / 国际版']();
  eq(c.location.assigned,'https://member.bilibili.com/platform/home?from=header');
 }
+
+for (const lang of ['en','zh-Hans','ja']) {
+ let d=setup('https://t.bilibili.com/123?tab=8#reply',lang);
+ d.menus['切换国内版 / 国际版']();
+ eq(d.location.assigned,`https://t.bilibili.com/123?tab=8&site=OVERSEAS&lang=${lang}#reply`);
+ eq(d.cookieWrites[0].startsWith('user_site=OVERSEAS;'),true);
+ d=setup(`https://t.bilibili.com/123?tab=8&site=OVERSEAS&lang=${lang}#reply`,lang);
+ eq(d.nodes.some(n=>n.tag==='button'&&n.textContent==='切到国内版'),true);
+ d.menus['切换国内版 / 国际版']();
+ eq(d.location.assigned,'https://t.bilibili.com/123?tab=8#reply');
+ eq(d.cookieWrites[0].startsWith('user_site=CN;'),true);
+}
 console.log(`${checks} userscript checks passed (simulated DOM and GM APIs)`);
+

@@ -19,7 +19,7 @@ B站国内版 / 国际多语言版一键切换工具，提供篡改猴脚本和 
 
 ### 脚本更新
 
-当前版本 **0.1.2**。脚本已配置此仓库的 `@updateURL` 和 `@downloadURL`，可通过篡改猴检查更新。实际检查频率由篡改猴设置决定。
+当前版本 **0.1.3**。脚本已配置此仓库的 `@updateURL` 和 `@downloadURL`，可通过篡改猴检查更新。实际检查频率由篡改猴设置决定。
 
 此前手动安装的 0.1.0 尚未配置更新地址，请通过上方链接更新一次。若出现两份同名脚本，请禁用或删除旧版，保留一份启用。
 
@@ -51,7 +51,8 @@ B站国内版 / 国际多语言版一键切换工具，提供篡改猴脚本和 
 
 - **创作中心**：识别 `member.bilibili.com/en/platform/...` 等语言前缀，在国内版和国际版之间保留当前子页面及网址参数。
 - **主站首页和普通 BV/av 视频页**：保留当前页面、分 P、时间参数及网址锚点。
-- **搜索、空间、动态、直播、番剧、专栏等其他页面**：当前版本切换到目标版本首页。
+- **动态 `t.bilibili.com` 及其他页面**：保留当前子域名、页面路径、参数和锚点，通过 `site=OVERSEAS&lang=所选语言` 请求切换；切回国内版时移除这两项参数。不会再跳到主站首页。
+- 这些页面的参数适配仅保证保留页面，不能保证网站一定提供或启用对应的国际版界面。2026-11-19 的动态页公开访问核对被网站以 HTTP 412 拦截，尚未完成登录环境验证。
 - 切换会刷新当前页面。只有原网址自带时间参数时才保留对应播放位置。
 - 选择语言并保存，本身不会刷新页面；下次切到国际版时生效。
 
@@ -59,10 +60,10 @@ B站国内版 / 国际多语言版一键切换工具，提供篡改猴脚本和 
 
 ## Firefox 扩展
 
-当前扩展版本 **0.1.1**，新增创作中心支持；先前提交审核的版本仍为 0.1.0。
+当前扩展版本 **0.1.2**，修复动态等页面被跳转到主站首页的问题；先前提交审核的版本仍为 0.1.0。
 
-- [下载 Mozilla 上传包 ZIP](https://github.com/yuyu107/BiliEditionSwitch/raw/refs/heads/main/dist/BiliEditionSwitch-Firefox-v0.1.1-AMO.zip)
-- [下载未签名 XPI](https://github.com/yuyu107/BiliEditionSwitch/raw/refs/heads/main/dist/BiliEditionSwitch-Firefox-v0.1.1-unsigned.xpi)
+- [下载 Mozilla 上传包 ZIP](https://github.com/yuyu107/BiliEditionSwitch/raw/refs/heads/main/dist/BiliEditionSwitch-Firefox-v0.1.2-AMO.zip)
+- [下载未签名 XPI](https://github.com/yuyu107/BiliEditionSwitch/raw/refs/heads/main/dist/BiliEditionSwitch-Firefox-v0.1.2-unsigned.xpi)
 - [查看完整源码](firefox/)
 
 ZIP 根目录直接包含 `manifest.json`，可用于上传审核。未签名 XPI 不能在普通正式版 Firefox 中作为永久扩展安装。
@@ -116,3 +117,4 @@ python3 tools/build.py
 [提交问题](https://github.com/yuyu107/BiliEditionSwitch/issues)，请附浏览器、脚本或扩展版本、切换前后网址和现象。请勿提交账号 Cookie 或登录凭据。
 
 非官方工具，与哔哩哔哩无关联。
+

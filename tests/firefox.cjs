@@ -20,9 +20,9 @@ equal(routing.plan(home + "video/av170001?site=OVERSEAS&lang=ja&p=2", "en").url,
   home + "video/av170001?p=2");
 equal(routing.plan(home + "video/av170001?SITE=CN&LANG=bad&p=2", "zh-Hans").url,
   home + "zh-Hans/video/av170001?p=2");
-equal(routing.plan("https://space.bilibili.com/123", "ja").url, home + "ja/");
-equal(routing.plan(home + "bangumi/play/ss123", "en").fallback, true);
-equal(routing.plan(home + "ja/bangumi/play/ss123", "en").url, home);
+equal(routing.plan("https://space.bilibili.com/123", "ja").url, "https://space.bilibili.com/123?site=OVERSEAS&lang=ja");
+equal(routing.plan(home + "bangumi/play/ss123", "en").parameterMode, true);
+equal(routing.plan(home + "ja/bangumi/play/ss123", "en").url, home + "bangumi/play/ss123");
 equal(routing.plan("https://bilibili.com/", "ru").url, home + "ru/");
 equal(routing.plan("http://www.bilibili.com/", "en").url, home + "en/");
 for (const raw of ["https://www.bilibili.tv/en", "https://bilibili.com.evil.test/", "about:debugging", "file:///tmp/bilibili.com", "garbage"]) {
@@ -40,13 +40,13 @@ for (const [lang] of routing.languages) {
  const member = "https://member.bilibili.com/";
  const to = routing.plan(member + "platform/upload/video/frame?aid=123#edit", lang);
  equal(to.url, member + lang + "/platform/upload/video/frame?aid=123#edit");
- equal(to.fallback, false);
+ equal(to.parameterMode, false);
  equal(routing.inspect(to.url).international, true);
  equal(routing.plan(to.url, lang).url, member + "platform/upload/video/frame?aid=123#edit");
 }
 equal(routing.plan("https://member.bilibili.com/zh-Hans/platform/home", "en").url,
  "https://member.bilibili.com/platform/home");
-equal(routing.plan("https://member.bilibili.com/unrelated", "ja").fallback, true);
+equal(routing.plan("https://member.bilibili.com/unrelated", "ja").parameterMode, true);
 
 for (const host of ["space.bilibili.com", "member.bilibili.com", "live.bilibili.com", "other.bilibili.com"]) {
  equal(routing.inspect("https://" + host + "/ja/some/page").international, true);
@@ -55,6 +55,23 @@ for (const host of ["space.bilibili.com", "member.bilibili.com", "live.bilibili.
 }
 equal(routing.inspect("https://fakebilibili.com/ja/"), null);
 equal(routing.inspect("https://bilibili.com.evil.test/ja/"), null);
+
+
+for (const [lang] of routing.languages) {
+ for (const page of ["https://t.bilibili.com/", "https://t.bilibili.com/123456?tab=8&type=video#reply"]) {
+  const to = routing.plan(page, lang);
+  const parsed = new URL(to.url);
+  equal(parsed.hostname, "t.bilibili.com");
+  equal(parsed.pathname, new URL(page).pathname);
+  equal(parsed.hash, new URL(page).hash);
+  equal(parsed.searchParams.get("lang"), lang);
+  equal(parsed.searchParams.get("site"), "OVERSEAS");
+  equal(routing.plan(to.url, lang).url, page);
+ }
+}
+// Strip stale overrides without losing dynamic filters or the detail ID.
+equal(routing.plan("https://t.bilibili.com/123?tab=8&SITE=OVERSEAS&LANG=ja#reply", "en").url,
+ "https://t.bilibili.com/123?tab=8#reply");
 
 async function integration() {
   const calls = [];
@@ -107,3 +124,4 @@ async function integration() {
   equal(calls.some(x => x[0] === "options"), true);
 }
 integration().then(() => console.log(`${checks} routing and background checks passed`)).catch(e => {console.error(e);process.exitCode = 1;});
+

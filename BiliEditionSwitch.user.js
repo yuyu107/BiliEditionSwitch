@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         B站国内版 / 国际版一键切换
 // @namespace    bili-edition-switch
-// @version      0.1.2
+// @version      0.1.3
 // @description  一键切换 bilibili.com 国内版与国际多语言版，自选国际版默认语言（13种）。
 // @match        https://bilibili.com/*
 // @match        https://*.bilibili.com/*
@@ -58,24 +58,32 @@ var BiliSwitch = (() => {
     const international = !current.international;
     const language = normalizeLanguage(preferredLanguage);
     const {url, main, creator, path} = current;
-    // Creator Center uses the same /<language>/ prefix before /platform/ routes.
-    const supported = (creator && /^\/platform(?:\/|$)/.test(path)) ||
+    // Verified pages use path prefixes. Other pages retain their origin and path
+    // and request the edition through query hints, which the website may ignore.
+    const pathMode = !!current.language ||
+      (creator && /^\/platform(?:\/|$)/.test(path)) ||
       (main && (path === "/" || /^\/video\/(?:BV[a-zA-Z0-9]+|av\d+)\/?$/i.test(path)));
-    const target = supported ? new URL(url) : new URL("https://www.bilibili.com/");
+    const target = new URL(url);
     target.protocol = "https:";
-    target.hostname = supported && creator ? "member.bilibili.com" : "www.bilibili.com";
     target.port = "";
     target.username = "";
     target.password = "";
-    // Remove obsolete language/site overrides without dropping p, t, or other parameters.
+    // Keep the user's subdomain; only canonicalize the bare main-site hostname.
+    if (target.hostname === "bilibili.com") target.hostname = "www.bilibili.com";
     for (const key of Array.from(target.searchParams.keys())) {
       if (["site", "lang"].includes(key.toLowerCase())) target.searchParams.delete(key);
     }
-    target.pathname = international ? "/" + language + (supported && path !== "/" ? path : "/") : (supported ? path : "/");
-    return {url: target.href, international, language, fallback: !supported};
+    target.pathname = pathMode && international ? "/" + language + (path !== "/" ? path : "/") : path;
+    if (!pathMode && international) {
+      target.searchParams.set("site", "OVERSEAS");
+      target.searchParams.set("lang", language);
+    }
+    return {url: target.href, international, language, parameterMode: !pathMode};
   }
+
   return {languages, defaults, normalizeLanguage, inspect, plan};
 })();
+
 
 
   if (!BiliSwitch.inspect(location.href) || document.getElementById("bili-edition-switch-userscript")) return;
@@ -180,8 +188,8 @@ var BiliSwitch = (() => {
     select.appendChild(option);
   }
   const hint = element("p", "默认英语。选择简体中文也会进入国际版布局。保存后，下次切换至国际版时生效。", "note");
-  const scope = element("p", "首页、普通视频页和创作中心保留原位置及网址参数；其他页面切到目标版本首页。切换会刷新页面，并更新 B站本地的版本、语言偏好。", "note");
-  const privacy = element("p", "国际版指 bilibili.com/en/ 等多语言页面。设置保存在篡改猴中，不收集或上传数据。v0.1.2", "note");
+  const scope = element("p", "切换时保留当前域名、页面和网址参数。动态等未确认多语言路由的页面使用版本与语言参数尝试切换，网站可能忽略这些参数。切换会刷新页面，并更新 B站本地的版本、语言偏好。", "note");
+  const privacy = element("p", "国际版指 bilibili.com/en/ 等多语言页面。设置保存在篡改猴中，不收集或上传数据。v0.1.3", "note");
   const state = element("p", "", "state");
   state.setAttribute("role", "status");
   const actions = element("div", "", "actions");
@@ -224,7 +232,7 @@ var BiliSwitch = (() => {
     if (!current) return;
     toggleButton.textContent = current.international ? "切到国内版" : "切到国际版";
     const next = BiliSwitch.plan(location.href, language());
-    toggleButton.title = next.fallback ? "当前页面暂未适配，点击切换到目标版本首页" : "保留当前页面网址参数，切换国内版 / 国际版";
+    toggleButton.title = next.parameterMode ? "保留当前页面并尝试切换版本偏好；网站可能不支持此页面的国际版" : "保留当前页面网址参数，切换国内版 / 国际版";
   }
   function fullscreen() { host.style.setProperty("display", document.fullscreenElement ? "none" : "block", "important"); }
   document.addEventListener("fullscreenchange", fullscreen);
@@ -240,3 +248,4 @@ var BiliSwitch = (() => {
   GM_registerMenuCommand("设置国际版默认语言…", openSettings);
 
 })();
+
